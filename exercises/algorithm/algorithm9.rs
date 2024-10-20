@@ -1,9 +1,3 @@
-/*
-	heap
-	This question requires you to implement a binary heap function
-*/
-// I AM NOT DONE
-
 use std::cmp::Ord;
 use std::default::Default;
 
@@ -23,7 +17,7 @@ where
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
             count: 0,
-            items: vec![T::default()],
+            items: vec![T::default()], // Placeholder for 1-based indexing
             comparator,
         }
     }
@@ -37,7 +31,26 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.count += 1;
+        if self.count < self.items.len() {
+            self.items[self.count] = value;
+        } else {
+            self.items.push(value);
+        }
+        self.bubble_up(self.count);
+    }
+
+    fn bubble_up(&mut self, idx: usize) {
+        let mut child_idx = idx;
+        while child_idx > 1 {
+            let parent_idx = self.parent_idx(child_idx);
+            if (self.comparator)(&self.items[child_idx], &self.items[parent_idx]) {
+                self.items.swap(child_idx, parent_idx);
+                child_idx = parent_idx;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +70,27 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left_idx = self.left_child_idx(idx);
+        let right_idx = self.right_child_idx(idx);
+
+        if right_idx <= self.count && (self.comparator)(&self.items[right_idx], &self.items[left_idx]) {
+            right_idx
+        } else {
+            left_idx
+        }
+    }
+
+    fn bubble_down(&mut self, idx: usize) {
+        let mut parent_idx = idx;
+        while self.children_present(parent_idx) {
+            let child_idx = self.smallest_child_idx(parent_idx);
+            if (self.comparator)(&self.items[child_idx], &self.items[parent_idx]) {
+                self.items.swap(parent_idx, child_idx);
+                parent_idx = child_idx;
+            } else {
+                break;
+            }
+        }
     }
 }
 
@@ -66,12 +98,10 @@ impl<T> Heap<T>
 where
     T: Default + Ord,
 {
-    /// Create a new MinHeap
     pub fn new_min() -> Self {
         Self::new(|a, b| a < b)
     }
 
-    /// Create a new MaxHeap
     pub fn new_max() -> Self {
         Self::new(|a, b| a > b)
     }
@@ -79,13 +109,19 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+        let top = self.items[1].clone();
+        self.items[1] = self.items[self.count].clone();
+        self.count -= 1;
+        self.bubble_down(1);
+        Some(top)
     }
 }
 

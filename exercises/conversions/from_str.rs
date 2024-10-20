@@ -12,6 +12,8 @@
 use std::num::ParseIntError;
 use std::str::FromStr;
 
+use ParsePersonError::{Empty, BadLen, NoName, ParseInt};
+
 #[derive(Debug, PartialEq)]
 struct Person {
     name: String,
@@ -31,27 +33,38 @@ enum ParsePersonError {
     ParseInt(ParseIntError),
 }
 
-// I AM NOT DONE
-
 // Steps:
 // 1. If the length of the provided string is 0, an error should be returned
 // 2. Split the given string on the commas present in it
-// 3. Only 2 elements should be returned from the split, otherwise return an
-//    error
+// 3. Only 2 elements should be returned from the split, otherwise return an error
 // 4. Extract the first element from the split operation and use it as the name
-// 5. Extract the other element from the split operation and parse it into a
-//    `usize` as the age with something like `"4".parse::<usize>()`
-// 6. If while extracting the name and the age something goes wrong, an error
-//    should be returned
+// 5. Extract the other element from the split operation and parse it into a `usize` as the age
+//    with something like `"4".parse::<usize>()`
+// 6. If while extracting the name and the age something goes wrong, an error should be returned
 // If everything goes well, then return a Result of a Person object
 //
-// As an aside: `Box<dyn Error>` implements `From<&'_ str>`. This means that if
-// you want to return a string error message, you can do so via just using
-// return `Err("my error message".into())`.
+// As an aside: `Box<dyn Error>` implements `From<&'_ str>`. This means that if you want to return a
+// string error message, you can do so via just using return `Err("my error message".into())`.
 
+// Using ParsePersonError::{Empty, BadLen, NoName, ParseInt} above
 impl FromStr for Person {
     type Err = ParsePersonError;
     fn from_str(s: &str) -> Result<Person, Self::Err> {
+        if s.is_empty() {
+            Err(Empty) // i.e., Err(ParsePersonError::Empty)
+        } else {
+            let p: Vec<&str> = s.split(',').collect();
+            if p.len() != 2 {
+                Err(BadLen)
+            } else if p[0].len() == 0 {
+                Err(NoName)
+            } else { 
+                match p[1].parse::<usize>() {
+                    Ok(a) => Ok(Person { name: p[0].to_string(), age: a }),
+                    Err(a) => Err(ParseInt(a)),
+                }
+            }
+        }
     }
 }
 
