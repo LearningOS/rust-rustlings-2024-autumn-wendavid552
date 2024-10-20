@@ -1,5 +1,6 @@
 # Exercise to Book Chapter mapping
 
+
 | Exercise               | Book Chapter        |
 | ---------------------- | ------------------- |
 | variables              | §3.1                |
